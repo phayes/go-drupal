@@ -49,7 +49,7 @@ func (d *Drush) Run() (output string, messages DrushMessageSet, errs error) {
 		scanner := bufio.NewScanner(stderr)
 		for scanner.Scan() {
 			message := NewDrushMessage(scanner.Text())
-			if message.Type == DrushMessageOK {
+			if message.Type == DrushMessageOK || message.Type == DrushMessageSuccess {
 				messages = append(messages, message)
 			} else {
 				errset = append(errset, message)
@@ -71,7 +71,7 @@ func (d *Drush) Run() (output string, messages DrushMessageSet, errs error) {
 	}
 	wg.Wait()
 
-	if errset.HasErrors() {
+	if errset != nil && len(errset) > 0 {
 		errs = errset
 	}
 
@@ -104,6 +104,8 @@ func NewDrushMessage(messageline string) DrushMessage {
 		mestype = DrushMessageWarning
 	} else if strings.HasSuffix(messageline, DrushMessageOK.String()) {
 		mestype = DrushMessageOK
+	} else if strings.HasSuffix(messageline, DrushMessageSuccess.String()) {
+		mestype = DrushMessageSuccess
 	} else {
 		mestype = DrushMessageUnknown
 	}
@@ -130,6 +132,7 @@ const (
 	DrushMessageWarning DrushMessageType = "[warning]" // For errors reported as [warning]
 	DrushMessageNotice  DrushMessageType = "[notice]"  // For errors reported as [notice]
 	DrushMessageOK      DrushMessageType = "[ok]"      // For non-errors reported as [ok]
+	DrushMessageSuccess DrushMessageType = "[success]" // For non-errors reported as [success]
 	DrushMessageUnknown DrushMessageType = "[unknown]" // All other output in stderr
 )
 
@@ -143,7 +146,7 @@ func (des DrushMessageSet) Error() string {
 	output := ""
 
 	for _, DrushMessage := range des {
-		output += DrushMessage.Error() + ". "
+		output += DrushMessage.Error() + " "
 	}
 
 	return output

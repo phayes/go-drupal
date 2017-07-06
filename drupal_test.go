@@ -34,6 +34,33 @@ func TestDownload(t *testing.T) {
 	}
 	os.Symlink(source, target)
 
+	// Test download of views
+	output, messages, errs := site.Drush("dl", "views")
+	if output == "" {
+		t.Error("Empty output on drush dl views")
+	}
+	if messages[0].Type != DrushMessageSuccess {
+		t.Error("No success message on drush dl views")
+	}
+	if errs == nil {
+		t.Error("No warning messages on drush dl views")
+	}
+	errMessages, ok := errs.(DrushMessageSet)
+
+	if !ok {
+		t.Error("Could not transform errs to DrushMessageSet")
+		return
+	}
+
+	if len(errMessages) != 1 {
+		t.Error("Incorrect number of warnings on drush dl views")
+	}
+	if errMessages[0].Type != DrushMessageWarning {
+		t.Error("Wrong type of error on drush dl views")
+	}
+	if errMessages[0].Message != "There are no stable releases for project views." {
+		t.Error("Wrong error message on drush dl views. Got", errMessages[0].Message)
+	}
 }
 
 func TestStatus(t *testing.T) {
