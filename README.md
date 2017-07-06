@@ -1,5 +1,7 @@
 # Go Drupal
 
+[![GoDoc](https://godoc.org/github.com/phayes/go-drupal?status.svg)](https://godoc.org/github.com/phayes/go-drupal)
+
 Package `drupal` is a go library for interacting with a drupal site via command-line and drush.
 
 Get simple site status information:
@@ -25,46 +27,56 @@ func main() {
 Connect to the Drupal database:
 
 ```go
-	import "github.com/phayes/go-drupal"
+package main
 
-	func main() {
-		site, err := drupal.NewSite("/var/www/drupalsite")
-		if err != nil {
-			log.Fatal(err)
-		}
+import (
+	"fmt"
+	"log"
+)
 
-		dbinfo, err := site.GetDatabase();
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		db, err := dbinfo.Open()
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer db.Close();
-
-    // Test the connection to the database
-    err = db.Ping()
-    if err != nil {
-        log.Fatal(err)
-    }
-
-		// Do queries
-		var user string
-    err := db.QueryRow("SELECT name FROM users WHERE uid=?", 1).Scan(&user)
-		if err != nil {
-        log.Fatal(err)
-    }
-
-		fmt.Println("Admin username is", user)
+func main() {
+	site, err := drupal.NewSite("/var/www/drupalsite")
+	if err != nil {
+		log.Fatal(err)
 	}
+
+	dbinfo, err := site.GetDatabase()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	db, err := dbinfo.Open()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	// Test the connection to the database
+	err = db.Ping()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Do queries
+	var user string
+	err := db.QueryRow("SELECT name FROM users WHERE uid=?", 1).Scan(&user)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Admin username is", user)
+}
 ```
 
 Running a drush command:
 
 ```go
-import "github.com/phayes/go-drupal"
+package main
+
+import (
+	"fmt"
+	"log"
+)
 
 func main() {
 	site, err := drupal.NewSite("/var/www/drupalsite/sites/multisite")
@@ -108,7 +120,12 @@ func main() {
 Get $settings from settings.php:
 
 ```go
-import "github.com/phayes/go-drupal"
+package main
+
+import (
+	"fmt"
+	"log"
+)
 
 func main() {
 	site, err := drupal.NewSite("/var/www/drupalsite")
@@ -126,4 +143,5 @@ func main() {
 
 	fmt.Println("Hash Salt for site is", hashSalt)
 }
+
 ```
