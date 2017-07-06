@@ -6,8 +6,6 @@ Package `drupal` is a go library for interacting with a drupal site via command-
 
 Get simple site status information:
 
-import "github.com/phayes/go-drupal"
-
 ```go
 func main() {
 	site, err := drupal.NewSite("/var/www/drupalsite")
