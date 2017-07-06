@@ -5,14 +5,12 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 
 	"github.com/phayes/errors"
 )
 
 type Site struct {
 	Directory string
-	settings  map[string]string
 }
 
 type Database struct {
@@ -96,19 +94,18 @@ func (s *Site) GetSettings() (Settings, error) {
 }
 
 func (s *Site) GetStatus() (*Status, error) {
-	output, warns, errs := s.Drush("status", "--format=json")
+	output, _, errs := s.Drush("status", "--format=json")
 	if errs != nil {
 		return nil, errs
 	}
-	rawjson := strings.Join(output, "\n")
 
 	status := &Status{}
-	err := json.Unmarshal([]byte(rawjson), status)
+	err := json.Unmarshal([]byte(output), status)
 	if err != nil {
 		return nil, err
 	}
 
-	return status, warns
+	return status, nil
 }
 
 func (s *Site) GetDefaultDatabase() (*Database, error) {
@@ -133,7 +130,7 @@ func (s *Site) GetDefaultDatabase() (*Database, error) {
 	return &defaultDatabase, nil
 }
 
-func (s *Site) Drush(command string, arguments ...string) (output []string, warns error, errs error) {
+func (s *Site) Drush(command string, arguments ...string) (output string, messages DrushMessageSet, errs error) {
 	drush := NewDrush(s.Directory, command, arguments...)
 	return drush.Run()
 }

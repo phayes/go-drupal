@@ -6,8 +6,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"testing"
-
-	"github.com/phayes/errors"
 )
 
 func TestDownload(t *testing.T) {
@@ -135,9 +133,9 @@ func TestDrush(t *testing.T) {
 		t.Error(err)
 	}
 
-	output, warns, errs := site.Drush("status")
-	if warns != nil {
-		t.Error("Got warning on drush status")
+	output, info, errs := site.Drush("status")
+	if info != nil {
+		t.Error("Got info on drush status")
 	}
 	if errs != nil {
 		t.Error("Got error on drush status")
@@ -148,30 +146,24 @@ func TestDrush(t *testing.T) {
 
 	// Test failing command
 	drush := NewDrush("./test", "pm-list")
-	output, warns, errs = drush.Run()
+	output, info, errs = drush.Run()
 	if errs != nil {
-		errset, ok := errs.(*errors.ErrorSet)
+		errset, ok := errs.(DrushMessageSet)
 		if !ok {
 			// Would normally return error here
 			t.Error("Got single error, not a set of errors")
 		}
-		if errset.Get("drush").Error() != "exit status 1" {
-			t.Error("Incorrect error returned for drush")
-		}
-		if errset.Get("1").Error() != "Command pm-list needs a higher bootstrap level to run - you will need to invoke drush from a more functional Drupal environment to run this command." {
-			t.Error("Incorrect error returned for line 1")
-		}
-		if errset.Get("2").Error() != "The drush command 'pm-list' could not be executed." {
-			t.Error("Incorrect error returned for line 2")
+		if len(errset) != 3 {
+			t.Error("Incorrect number of errors")
 		}
 	}
 
 	// Check output
-	if output != nil {
+	if output != "" {
 		t.Error("Bad output on failing command")
 	}
-	if warns != nil {
-		t.Error("Bad warnings on failing command")
+	if info != nil {
+		t.Error("Bad info on failing command")
 	}
 	if errs == nil {
 		t.Error("Errors should not be nil on failing command")
