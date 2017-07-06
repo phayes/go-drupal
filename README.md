@@ -1,6 +1,7 @@
 # Go Drupal
 
 [![GoDoc](https://godoc.org/github.com/phayes/go-drupal?status.svg)](https://godoc.org/github.com/phayes/go-drupal)
+[![Go Report Card](https://goreportcard.com/badge/github.com/phayes/go-drupal)](https://goreportcard.com/report/github.com/phayes/go-drupal)
 
 Package `drupal` is a go library for interacting with a drupal site via command-line and drush.
 
