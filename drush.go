@@ -9,6 +9,7 @@ import (
 	"sync"
 )
 
+// Drush is a drush command to be executed
 type Drush struct {
 	Directory string
 	Command   string
@@ -16,12 +17,29 @@ type Drush struct {
 	cmd       *exec.Cmd
 }
 
+// NewDrush returns a new drush command
 func NewDrush(directory string, command string, arguments ...string) *Drush {
 	drush := Drush{Directory: directory, Command: command, Arguments: arguments}
 	return &drush
 }
 
-func (d *Drush) Run() (output string, messages DrushMessageSet, errs error) {
+// Run executes the drush command
+// output is the output written to stdout
+// messages are any [ok] or [success] messages written to stderr
+// errs might be an instance of DrushMessages, and will contain errors, warnings, and notices produced by the command
+// To inspect individual errors do the following:
+//   output, messages, errs := myDrushCommand.Run()
+//   if errs != nil {
+//     errset, ok := errs.(DrushMessages)
+//     if !ok {
+//       return err // Not an instances of DrushMessages, command likely failed to start
+//     }
+//     // Inspect individual errors, warnings and notices
+//     for _, message := range errset {
+//       …
+//     }
+//   }
+func (d *Drush) Run() (output string, messages DrushMessages, errs error) {
 	d.buildCommand()
 
 	stderr, err := d.cmd.StderrPipe()
@@ -42,7 +60,7 @@ func (d *Drush) Run() (output string, messages DrushMessageSet, errs error) {
 	var wg sync.WaitGroup
 
 	// Stderr
-	errset := DrushMessageSet{}
+	errset := DrushMessages{}
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -136,10 +154,10 @@ const (
 	DrushMessageUnknown DrushMessageType = "[unknown]" // All other output in stderr
 )
 
-// DrushMessageSet implements the standard error interface and represents all errors, warnings and notices reported by a drush command
-type DrushMessageSet []DrushMessage
+// DrushMessages implements the standard error interface and represents all errors, warnings and notices reported by a drush command
+type DrushMessages []DrushMessage
 
-func (des DrushMessageSet) Error() string {
+func (des DrushMessages) Error() string {
 	if des == nil {
 		return ""
 	}
@@ -152,9 +170,9 @@ func (des DrushMessageSet) Error() string {
 	return output
 }
 
-// HasErrors checks to see if the DrushMessageSet contains [error] errors.
-// It will return false if the DrushMessageSet only contains warnings and notices.
-func (des DrushMessageSet) HasErrors() bool {
+// HasErrors checks to see if the DrushMessages contains [error] errors.
+// It will return false if the DrushMessages only contains warnings and notices.
+func (des DrushMessages) HasErrors() bool {
 	if des == nil {
 		return false
 	}
@@ -167,9 +185,9 @@ func (des DrushMessageSet) HasErrors() bool {
 	return false
 }
 
-// HasWarnings checks to see if the DrushMessageSet contains [warning] errors.
-// It will return false if the DrushMessageSet only contains errors and notices.
-func (des DrushMessageSet) HasWarnings() bool {
+// HasWarnings checks to see if the DrushMessages contains [warning] errors.
+// It will return false if the DrushMessages only contains errors and notices.
+func (des DrushMessages) HasWarnings() bool {
 	if des == nil {
 		return false
 	}
@@ -182,9 +200,9 @@ func (des DrushMessageSet) HasWarnings() bool {
 	return false
 }
 
-// HasNotices checks to see if the DrushMessageSet contains [notice] errors.
-// It will return false if the DrushMessageSet only contains errors and warnings.
-func (des DrushMessageSet) HasNotices() bool {
+// HasNotices checks to see if the DrushMessages contains [notice] errors.
+// It will return false if the DrushMessages only contains errors and warnings.
+func (des DrushMessages) HasNotices() bool {
 	if des == nil {
 		return false
 	}
@@ -197,8 +215,8 @@ func (des DrushMessageSet) HasNotices() bool {
 	return false
 }
 
-// HasUnknowns checks to see if the DrushMessageSet contains unknown errors in stderr.
-func (des DrushMessageSet) HasUnknowns() bool {
+// HasUnknowns checks to see if the DrushMessages contains unknown errors in stderr.
+func (des DrushMessages) HasUnknowns() bool {
 	if des == nil {
 		return false
 	}
