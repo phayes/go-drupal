@@ -21,7 +21,7 @@ func TestDownload(t *testing.T) {
 	}
 
 	// Set the site directory to the downloaded drupal core
-	site.Directory = "./test/drupal-8.3.5"
+	site = "./test/drupal-8.3.5"
 
 	// Symlink settings.php
 	source, err := filepath.Abs("./test/settings.php")
@@ -45,10 +45,10 @@ func TestDownload(t *testing.T) {
 	if errs == nil {
 		t.Error("No warning messages on drush dl views")
 	}
-	errMessages, ok := errs.(DrushMessageSet)
+	errMessages, ok := errs.(DrushMessages)
 
 	if !ok {
-		t.Error("Could not transform errs to DrushMessageSet")
+		t.Error("Could not transform errs to DrushMessages")
 		return
 	}
 
@@ -175,7 +175,7 @@ func TestDrush(t *testing.T) {
 	drush := NewDrush("./test", "pm-list")
 	output, info, errs = drush.Run()
 	if errs != nil {
-		errset, ok := errs.(DrushMessageSet)
+		errset, ok := errs.(DrushMessages)
 		if !ok {
 			// Would normally return error here
 			t.Error("Got single error, not a set of errors")
